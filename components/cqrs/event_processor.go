@@ -84,6 +84,7 @@ func (c EventProcessorConfig) Validate() error {
 type EventProcessorGenerateSubscribeTopicFn func(EventProcessorGenerateSubscribeTopicParams) (string, error)
 
 type EventProcessorGenerateSubscribeTopicParams struct {
+	Event        any
 	EventName    string
 	EventHandler EventHandler
 }
@@ -91,6 +92,7 @@ type EventProcessorGenerateSubscribeTopicParams struct {
 type EventProcessorSubscriberConstructorFn func(EventProcessorSubscriberConstructorParams) (message.Subscriber, error)
 
 type EventProcessorSubscriberConstructorParams struct {
+	TopicName    string
 	EventName    string
 	HandlerName  string
 	EventHandler EventHandler
@@ -258,6 +260,7 @@ func (p EventProcessor) addHandlerToRouter(r *message.Router, handler EventHandl
 	eventName := p.config.Marshaler.Name(handler.NewEvent())
 
 	topicName, err := p.config.GenerateSubscribeTopic(EventProcessorGenerateSubscribeTopicParams{
+		Event:        handler.NewEvent(),
 		EventName:    eventName,
 		EventHandler: handler,
 	})
@@ -280,6 +283,7 @@ func (p EventProcessor) addHandlerToRouter(r *message.Router, handler EventHandl
 	}
 
 	subscriber, err := p.config.SubscriberConstructor(EventProcessorSubscriberConstructorParams{
+		TopicName:    topicName,
 		EventName:    eventName,
 		HandlerName:  handlerName,
 		EventHandler: handler,
